@@ -4,19 +4,10 @@ import {
   updateDoc,
   doc,
   deleteDoc,
-  getDocs,
-  where,
-  query,
   arrayUnion,
-  getDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type {
-  AddUserToRoom,
-  CreateRoom,
-  DeleteRoom,
-  UpdateRoom,
-} from "../types";
+import type { CreateRoom, DeleteRoom, UpdateRoom } from "../types";
 
 export const createRoom: CreateRoom = async (
   name,
@@ -58,73 +49,20 @@ export const deleteRoom: DeleteRoom = async (roomId) => {
   }
 };
 
-export const addUserToRoom: AddUserToRoom = async (
-  roomId,
-  email,
-  requesterId
+export const addUserToBooking = async (
+  bookingId: string,
+  participantEmail: string
 ) => {
   try {
-    // Validate requester
-    if (!requesterId) {
-      throw new Error("Requester ID is required");
-    }
+    // Get the booking document
+    const bookingRef = doc(db, "bookings", bookingId);
 
-    // Get requester's user document
-    const requesterDocRef = doc(db, "users", requesterId);
-    const requesterDoc = await getDoc(requesterDocRef);
-    if (!requesterDoc.exists()) {
-      throw new Error("Requester not found");
-    }
-    const requesterData = requesterDoc.data();
-    const isAdmin = requesterData.role === "admin";
-    const requesterEmail = requesterData.email.toLowerCase();
-
-    // Check if requester is a participant in any booking for the room (if not admin)
-    let isParticipant = false;
-    if (!isAdmin) {
-      const bookingsQuery = query(
-        collection(db, "bookings"),
-        where("roomId", "==", roomId)
-      );
-      const bookingsSnapshot = await getDocs(bookingsQuery);
-      bookingsSnapshot.forEach((doc) => {
-        const participants = doc.data().participants || [];
-        if (participants.includes(requesterEmail)) {
-          isParticipant = true;
-        }
-      });
-    }
-
-    // Verify authorization
-    if (!isAdmin && !isParticipant) {
-      throw new Error(
-        "You must be an admin or a meeting participant to add users to this room"
-      );
-    }
-
-    // Find user to add by email
-    const usersQuery = query(
-      collection(db, "users"),
-      where("email", "==", email.toLowerCase())
-    );
-    const userSnapshot = await getDocs(usersQuery);
-    if (userSnapshot.empty) {
-      throw new Error("User not found");
-    }
-
-    const userDoc = userSnapshot.docs[0];
-    const userId = userDoc.id;
-    const userRole = userDoc.data().role || "user";
-
-    // Add user to room's members
-    const roomRef = doc(db, "rooms", roomId);
-    await updateDoc(roomRef, {
-      members: arrayUnion({ userId, role: userRole }),
+    // Add the new participant by email
+    await updateDoc(bookingRef, {
+      participants: arrayUnion(participantEmail),
     });
-
-    console.log(`User ${email} added to room ${roomId}`);
   } catch (error) {
-    console.error("Error adding user to room:", error);
+    console.error("Error adding participant to booking:", error);
     throw error;
   }
 };

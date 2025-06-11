@@ -1,8 +1,10 @@
 import {
+  arrayRemove,
   arrayUnion,
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   setDoc,
@@ -66,6 +68,13 @@ export const createBooking: CreateBooking = async (input) => {
       participants: [email.toLowerCase()],
     });
     console.log(`Booking created with ID: ${bookingRef.id}`);
+
+    // Add booking ID to user's bookings array
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      bookings: arrayUnion(bookingRef.id),
+    });
+
     return bookingRef.id;
   } catch (error) {
     console.error("Error creating booking:", error);
@@ -99,7 +108,34 @@ export const updateBooking: UpdateBooking = async (bookingId, updates) => {
 
 export const cancelBooking: CancelBooking = async (bookingId) => {
   try {
-    await deleteDoc(doc(db, "bookings", bookingId));
+    // 1. Get the booking document
+    const bookingRef = doc(db, "bookings", bookingId);
+    const bookingSnap = await getDoc(bookingRef);
+
+    if (!bookingSnap.exists()) {
+      throw new Error("Booking not found");
+    }
+
+    const bookingData = bookingSnap.data();
+    const participants: string[] = bookingData.participants || [];
+
+    // 2. For each participant email, remove bookingId from their user doc
+    for (const email of participants) {
+      const usersQuery = query(
+        collection(db, "users"),
+        where("email", "==", email)
+      );
+      const userSnap = await getDocs(usersQuery);
+      userSnap.forEach(async (userDoc) => {
+        const userRef = doc(db, "users", userDoc.id);
+        await updateDoc(userRef, {
+          bookings: arrayRemove(bookingId),
+        });
+      });
+    }
+
+    // 3. Delete the booking document
+    await deleteDoc(bookingRef);
   } catch (error) {
     console.error("Error canceling booking:", error);
     throw error;

@@ -46,38 +46,36 @@ const MainPage = () => {
   const [selectedBookingData, setSelectedBookingData] =
     useState<Booking | null>(null);
 
+  const fetchData = async () => {
+    try {
+      const roomsSnapshot = await getDocs(collection(db, "rooms"));
+      const roomsData: Room[] = roomsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        name: doc.data().name,
+        description: doc.data().description,
+        imageUrl: doc.data().imageUrl,
+      }));
+      setRooms(roomsData);
+
+      const bookingsSnapshot = await getDocs(collection(db, "bookings"));
+      const bookingsData: Booking[] = bookingsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        roomId: doc.data().roomId,
+        userId: doc.data().userId,
+        startTime: doc.data().startTime.toDate().toISOString(),
+        endTime: doc.data().endTime.toDate().toISOString(),
+        description: doc.data().description,
+      }));
+      setBookings(bookingsData);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to load rooms and bookings.");
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch rooms
-        const roomsSnapshot = await getDocs(collection(db, "rooms"));
-        const roomsData: Room[] = roomsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name,
-          description: doc.data().description,
-          imageUrl: doc.data().imageUrl,
-        }));
-        setRooms(roomsData);
-
-        // Fetch bookings
-        const bookingsSnapshot = await getDocs(collection(db, "bookings"));
-        const bookingsData: Booking[] = bookingsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          roomId: doc.data().roomId,
-          userId: doc.data().userId,
-          startTime: doc.data().startTime.toDate().toISOString(),
-          endTime: doc.data().endTime.toDate().toISOString(),
-          description: doc.data().description,
-        }));
-        setBookings(bookingsData);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to load rooms and bookings.");
-      } finally {
-        setDataLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -117,6 +115,8 @@ const MainPage = () => {
     setSelectedBookingId(null);
     setSelectedRoomData(null);
     setSelectedBookingData(null);
+    setDataLoading(true);
+    fetchData();
   };
 
   if (authLoading || dataLoading) {
@@ -258,7 +258,7 @@ const MainPage = () => {
           />
         )}
       {modalType === "addUser" && selectedRoomId && (
-        <AddUserModal roomId={selectedRoomId} onClose={closeModal} />
+        <AddUserModal onClose={closeModal} />
       )}
     </div>
   );

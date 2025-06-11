@@ -101,30 +101,33 @@ const RoomCard = ({
               {bookings.map((booking) => (
                 <li
                   key={booking.id}
-                  className="text-gray-200 text-sm flex justify-between items-center"
+                  className="flex justify-between items-center"
                 >
-                  <span>
+                  <span className="text-white text-xs">
                     {toDateSafe(booking.startTime).toLocaleString()} -{" "}
                     {toDateSafe(booking.endTime).toLocaleString()}
                   </span>
-                  {(isAdmin || booking.userId === userId) && (
-                    <div className="flex gap-2">
-                      {isAdmin && (
+                  <div className="flex gap-2">
+                    {(isAdmin || booking.userId === userId) && (
+                      <>
+                        {/* Edit button only for booking owner or admin */}
+                        {booking.userId === userId && (
+                          <button
+                            onClick={() => onEditBooking(booking.id)}
+                            className="text-yellow-200 hover:text-yellow-400 text-xs cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                        )}
                         <button
-                          onClick={() => onEditBooking(booking.id)}
-                          className="text-yellow-200 hover:text-yellow-400 text-xs"
+                          onClick={() => onCancel(booking.id)}
+                          className="text-red-200 hover:text-red-400 text-xs cursor-pointer"
                         >
-                          Edit
+                          Cancel
                         </button>
-                      )}
-                      <button
-                        onClick={() => onCancel(booking.id)}
-                        className="text-red-200 hover:text-red-400 text-xs"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

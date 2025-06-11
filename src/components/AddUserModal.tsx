@@ -1,7 +1,9 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Modal from "../materials/Modal";
-import { addUserToRoom } from "../firebase/roomService";
+import { addUserToBooking } from "../firebase/roomService";
+import { getDocs, query, collection, where } from "firebase/firestore";
+import { db } from "../firebase/firebase"; // adjust path if needed
 import { useAuth } from "../hooks/useAuth";
 
 interface FormValues {
@@ -9,11 +11,10 @@ interface FormValues {
 }
 
 interface AddUserModalProps {
-  roomId: string;
   onClose: () => void;
 }
 
-const AddUserModal: React.FC<AddUserModalProps> = ({ roomId, onClose }) => {
+const AddUserModal: React.FC<AddUserModalProps> = ({ onClose }) => {
   const { user } = useAuth();
   const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email").required("Email is required"),
@@ -24,7 +25,30 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ roomId, onClose }) => {
     { setSubmitting, setStatus }: any
   ) => {
     try {
-      await addUserToRoom(roomId, values.email.toLowerCase(), user?.uid || "");
+      // 1. Find the user by email
+      const usersQuery = query(
+        collection(db, "users"),
+        where("email", "==", user.email.toLowerCase())
+      );
+      const userSnap = await getDocs(usersQuery);
+
+      if (userSnap.empty) {
+        throw new Error("User not found");
+      }
+
+      const userDoc = userSnap.docs[0];
+      const userBookings = userDoc.data().bookings;
+
+      if (!userBookings || userBookings.length === 0) {
+        throw new Error("User has no bookings");
+      }
+
+      // 2. Use the first booking ID (or let user select if multiple)
+      const bookingId = userBookings[0];
+
+      // 3. Add as participant to that booking
+      await addUserToBooking(bookingId, values.email.toLowerCase());
+
       setStatus({ success: true, message: "User added successfully!" });
       setTimeout(onClose, 1000);
     } catch (error: any) {
