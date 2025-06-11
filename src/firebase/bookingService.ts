@@ -1,11 +1,11 @@
 import {
-  addDoc,
   arrayUnion,
   collection,
   deleteDoc,
   doc,
   getDocs,
   query,
+  setDoc,
   Timestamp,
   updateDoc,
   where,
@@ -20,11 +20,23 @@ import { db } from "./firebase";
 
 export const createBooking: CreateBooking = async (input) => {
   try {
-    const { roomId, userId, startDate, endDate, description = "" } = input;
+    const {
+      roomId,
+      userId,
+      email,
+      startDate,
+      endDate,
+      description = "",
+    } = input;
 
     // Convert string dates to Timestamps
     const startTime = Timestamp.fromDate(new Date(startDate));
     const endTime = Timestamp.fromDate(new Date(endDate));
+
+    // Validate time
+    if (startTime.toDate() >= endTime.toDate()) {
+      throw new Error("End time must be after start time");
+    }
 
     // Check for time conflicts
     const bookingsQuery = query(
@@ -33,18 +45,27 @@ export const createBooking: CreateBooking = async (input) => {
       where("startTime", "<", endTime),
       where("endTime", ">", startTime)
     );
+    console.log("Checking for overlapping bookings:", {
+      roomId,
+      startTime,
+      endTime,
+    });
     const existingBookings = await getDocs(bookingsQuery);
     if (!existingBookings.empty) {
       throw new Error("Time conflict detected");
     }
 
-    const bookingRef = await addDoc(collection(db, "bookings"), {
+    // Create booking document
+    const bookingRef = doc(collection(db, "bookings"));
+    await setDoc(bookingRef, {
       roomId,
       userId,
       startTime,
       endTime,
       description,
+      participants: [email.toLowerCase()],
     });
+    console.log(`Booking created with ID: ${bookingRef.id}`);
     return bookingRef.id;
   } catch (error) {
     console.error("Error creating booking:", error);

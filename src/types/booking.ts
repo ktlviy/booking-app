@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase/firestore";
 
 export interface Booking {
+  id: string;
   roomId: string;
   userId: string;
   startTime: Timestamp;
@@ -11,6 +12,7 @@ export interface Booking {
 export type CreateBookingInput = {
   roomId: string;
   userId: string;
+  email: string;
   startDate: string;
   endDate: string;
   description?: string;

@@ -4,9 +4,18 @@ import {
   updateDoc,
   doc,
   deleteDoc,
+  getDocs,
+  where,
+  query,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { CreateRoom, DeleteRoom, UpdateRoom } from "../types";
+import type {
+  AddUserToRoom,
+  CreateRoom,
+  DeleteRoom,
+  UpdateRoom,
+} from "../types";
 
 export const createRoom: CreateRoom = async (
   name,
@@ -44,6 +53,32 @@ export const deleteRoom: DeleteRoom = async (roomId) => {
     await deleteDoc(doc(db, "rooms", roomId));
   } catch (error) {
     console.error("Error deleting room:", error);
+    throw error;
+  }
+};
+
+export const addUserToRoom: AddUserToRoom = async (roomId, email) => {
+  try {
+    const usersQuery = query(
+      collection(db, "users"),
+      where("email", "==", email.toLowerCase())
+    );
+    const userSnapshot = await getDocs(usersQuery);
+
+    if (userSnapshot.empty) {
+      throw new Error("User not found");
+    }
+
+    const userDoc = userSnapshot.docs[0];
+    const userId = userDoc.id;
+    const userRole = userDoc.data().role || "user";
+
+    const roomRef = doc(db, "rooms", roomId);
+    await updateDoc(roomRef, {
+      members: arrayUnion({ userId, role: userRole }),
+    });
+  } catch (error) {
+    console.error("Error adding user to room:", error);
     throw error;
   }
 };

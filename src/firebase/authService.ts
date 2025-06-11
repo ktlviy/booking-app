@@ -27,33 +27,15 @@ export async function registerUser({
       password
     );
     const user = userCredential.user;
-
     await setDoc(doc(db, "users", user.uid), {
-      name: name.trim(),
-      email: email.trim(),
-      role: role,
+      name,
+      email,
+      role,
     });
-
-    return { success: true, data: user };
-  } catch (error) {
-    const authError = error as AuthError;
-    let errorMessage = "Registration failed.";
-    switch (authError.code) {
-      case "auth/email-already-in-use":
-        errorMessage = "Email already registered.";
-        break;
-      case "auth/invalid-email":
-        errorMessage = "Invalid email format.";
-        break;
-      case "auth/weak-password":
-        errorMessage = "Password is too weak.";
-        break;
-      case "permission-denied":
-        errorMessage = "Insufficient permissions to save user data.";
-        break;
-    }
-    console.error("Error registering user:", authError);
-    return { success: false, error: errorMessage };
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error registering user:", error);
+    return { success: false, error: error.message };
   }
 }
 
