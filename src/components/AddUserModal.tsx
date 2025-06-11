@@ -2,6 +2,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Modal from "../materials/Modal";
 import { addUserToRoom } from "../firebase/roomService";
+import { useAuth } from "../hooks/useAuth";
 
 interface FormValues {
   email: string;
@@ -13,6 +14,7 @@ interface AddUserModalProps {
 }
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ roomId, onClose }) => {
+  const { user } = useAuth();
   const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email").required("Email is required"),
   });
@@ -22,7 +24,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ roomId, onClose }) => {
     { setSubmitting, setStatus }: any
   ) => {
     try {
-      await addUserToRoom(roomId, values.email.toLowerCase());
+      await addUserToRoom(roomId, values.email.toLowerCase(), user?.uid || "");
       setStatus({ success: true, message: "User added successfully!" });
       setTimeout(onClose, 1000);
     } catch (error: any) {
@@ -78,7 +80,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ roomId, onClose }) => {
               className={`w-full py-2 bg-cyan-500 text-white rounded-lg ${
                 isSubmitting
                   ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-cyan-600"
+                  : "hover:bg-green-600"
               }`}
             >
               {isSubmitting ? "Adding..." : "Add User"}

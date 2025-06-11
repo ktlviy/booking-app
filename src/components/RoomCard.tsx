@@ -1,12 +1,4 @@
-import type { RoomProps } from "../types";
-
-interface Booking {
-  id: string;
-  userId: string;
-  startTime: string;
-  endTime: string;
-  description: string;
-}
+import type { Booking, RoomProps } from "../types";
 
 interface RoomCardProps extends RoomProps {
   id: string;
@@ -35,6 +27,8 @@ const RoomCard = ({
   onEditBooking,
   onAddUser,
 }: RoomCardProps) => {
+  const hasBookedRoom = bookings.some((booking) => booking.userId === userId);
+
   return (
     <div className="relative bg-white/10 backdrop-blur-md border border-white/30 rounded-xl shadow-lg overflow-hidden w-full max-w-sm mx-auto transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
       {/* Image */}
@@ -63,29 +57,39 @@ const RoomCard = ({
           Book Now
         </button>
 
-        {/* Admin Actions */}
-        {isAdmin && (
-          <div className="mt-4 flex gap-2 flex-wrap">
-            <button
-              onClick={onEdit}
-              className="flex-1 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300"
-            >
-              Edit Room
-            </button>
-            <button
-              onClick={onDelete}
-              className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
-            >
-              Delete Room
-            </button>
+        {/* Actions */}
+        <div className="mt-4 flex gap-2 flex-wrap">
+          {isAdmin && (
+            <>
+              <button
+                onClick={onEdit}
+                className="flex-1 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+              >
+                Edit Room
+              </button>
+              <button
+                onClick={onDelete}
+                className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+              >
+                Delete Room
+              </button>
+              <button
+                onClick={onAddUser}
+                className="flex-1 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300"
+              >
+                Add User
+              </button>
+            </>
+          )}
+          {!isAdmin && hasBookedRoom && (
             <button
               onClick={onAddUser}
               className="flex-1 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300"
             >
               Add User
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Bookings List */}
         {bookings.length > 0 && (
@@ -100,8 +104,8 @@ const RoomCard = ({
                   className="text-gray-200 text-sm flex justify-between items-center"
                 >
                   <span>
-                    {new Date(booking.startTime).toLocaleString()} -{" "}
-                    {new Date(booking.endTime).toLocaleString()}
+                    {toDateSafe(booking.startTime).toLocaleString()} -{" "}
+                    {toDateSafe(booking.endTime).toLocaleString()}
                   </span>
                   {(isAdmin || booking.userId === userId) && (
                     <div className="flex gap-2">
@@ -127,11 +131,19 @@ const RoomCard = ({
           </div>
         )}
       </div>
-
-      {/* Hover Overlay */}
-      <div className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-300 hover:opacity-100 pointer-events-none" />
     </div>
   );
 };
+
+function toDateSafe(date: any): Date {
+  // Firestore Timestamp has a toDate method
+  if (date && typeof date.toDate === "function") return date.toDate();
+  // ISO string
+  if (typeof date === "string") return new Date(date);
+  // Already a Date
+  if (date instanceof Date) return date;
+  // Fallback
+  return new Date();
+}
 
 export default RoomCard;

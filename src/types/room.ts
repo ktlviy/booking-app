@@ -28,4 +28,8 @@ export type UpdateRoom = (
 
 export type DeleteRoom = (roomId: string) => Promise<void>;
 
-export type AddUserToRoom = (roomId: string, email: string) => Promise<void>;
+export type AddUserToRoom = (
+  roomId: string,
+  email: string,
+  requesterId: string
+) => Promise<void>;

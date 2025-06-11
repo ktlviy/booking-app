@@ -4,8 +4,8 @@ export interface Booking {
   id: string;
   roomId: string;
   userId: string;
-  startTime: Timestamp;
-  endTime: Timestamp;
+  startTime: Timestamp; // Use Timestamp for Firestore or string for ISO date
+  endTime: Timestamp; // Use Timestamp for Firestore or string for ISO date
   description: string;
 }
 

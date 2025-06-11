@@ -65,12 +65,8 @@ const MainPage = () => {
           id: doc.id,
           roomId: doc.data().roomId,
           userId: doc.data().userId,
-          startTime: doc.data().startTime?.toDate
-            ? doc.data().startTime.toDate().toISOString()
-            : doc.data().startTime,
-          endTime: doc.data().endTime?.toDate
-            ? doc.data().endTime.toDate().toISOString()
-            : doc.data().endTime,
+          startTime: doc.data().startTime.toDate().toISOString(),
+          endTime: doc.data().endTime.toDate().toISOString(),
           description: doc.data().description,
         }));
         setBookings(bookingsData);
@@ -181,23 +177,7 @@ const MainPage = () => {
                 name={room.name}
                 description={room.description}
                 imageUrl={room.imageUrl}
-                bookings={bookings
-                  .filter((b) => b.roomId === room.id)
-                  .map((b) => ({
-                    ...b,
-                    startTime:
-                      b.startTime &&
-                      typeof b.startTime === "object" &&
-                      "toDate" in b.startTime
-                        ? b.startTime.toDate().toISOString()
-                        : (b.startTime as string),
-                    endTime:
-                      b.endTime &&
-                      typeof b.endTime === "object" &&
-                      "toDate" in b.endTime
-                        ? b.endTime.toDate().toISOString()
-                        : (b.endTime as string),
-                  }))}
+                bookings={bookings.filter((b) => b.roomId === room.id)}
                 isAdmin={role === "admin"}
                 userId={user?.uid || ""}
                 onBook={() => openModal("bookRoom", room.id)}
@@ -265,17 +245,13 @@ const MainPage = () => {
             bookingId={selectedBookingId}
             initialValues={{
               startDate:
-                selectedBookingData.startTime &&
-                typeof selectedBookingData.startTime === "object" &&
-                "toDate" in selectedBookingData.startTime
-                  ? selectedBookingData.startTime.toDate().toISOString()
-                  : (selectedBookingData.startTime as string),
+                typeof selectedBookingData.startTime === "string"
+                  ? selectedBookingData.startTime
+                  : selectedBookingData.startTime.toDate().toISOString(),
               endDate:
-                selectedBookingData.endTime &&
-                typeof selectedBookingData.endTime === "object" &&
-                "toDate" in selectedBookingData.endTime
-                  ? selectedBookingData.endTime.toDate().toISOString()
-                  : (selectedBookingData.endTime as string),
+                typeof selectedBookingData.endTime === "string"
+                  ? selectedBookingData.endTime
+                  : selectedBookingData.endTime.toDate().toISOString(),
               description: selectedBookingData.description,
             }}
             onClose={closeModal}
