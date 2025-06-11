@@ -17,7 +17,7 @@ A modern web application for booking and managing meeting rooms, built with Reac
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/booking-app.git
+   git clone https://github.com/ktlviy/booking-app.git
    cd booking-app
    ```
 
