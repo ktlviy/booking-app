@@ -1,54 +1,77 @@
-# React + TypeScript + Vite
+# Booking App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern web application for booking and managing meeting rooms, built with React and Firebase.
 
-Currently, two official plugins are available:
+## 🚀 Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Authentication**: Secure login and registration.
+- **Room Management**: Admins can create, edit, and delete meeting rooms.
+- **Booking System**: Users can book available rooms for specific time slots.
+- **Booking Conflict Detection**: Prevents overlapping bookings for the same room.
+- **Participants Management**: Add participants to meetings by email.
+- **Role-Based Access**: Admins have full control; users can manage their own bookings and add participants.
+- **Responsive UI**: Clean, modern interface with mobile support.
 
-## Expanding the ESLint configuration
+## 🛠️ Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. **Clone the repository**
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+   ```bash
+   git clone https://github.com/yourusername/booking-app.git
+   cd booking-app
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configure Firebase**
+
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/).
+   - Enable Firestore and Authentication (Email/Password).
+   - Copy your Firebase config and replace the placeholder in `src/firebase/firebase.ts`:
+     ```typescript
+     // src/firebase/firebase.ts
+     const firebaseConfig = {
+       apiKey: "YOUR_API_KEY",
+       authDomain: "YOUR_AUTH_DOMAIN",
+       projectId: "YOUR_PROJECT_ID",
+       // ...other config
+     };
+     ```
+
+4. **Set Firestore Security Rules**
+
+   - Use the provided rules in your Firestore console for secure access.
+
+5. **Start the development server**
+
+   ```bash
+   npm start
+   ```
+
+6. **Open in your browser**
+   ```
+   http://localhost:3000
+   ```
+
+## 📚 Usage
+
+- **Admins** can manage rooms and all bookings.
+- **Users** can book rooms, view their bookings, and add participants to their meetings.
+- **Participants** receive access to meetings they are added to.
+
+## 📂 Project Structure
+
+```
+src/
+  components/      # React components
+  firebase/        # Firebase config and services
+  hooks/           # Custom React hooks
+  pages/           # Page components (MainPage, etc.)
+  types/           # TypeScript types
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+**Enjoy using Booking App!**
