@@ -25,7 +25,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose }) => {
     { setSubmitting, setStatus }: any
   ) => {
     try {
-      // 1. Find the user by email
+      if (!user || !user.email) {
+        throw new Error("Current user is not authenticated or missing email.");
+      }
       const usersQuery = query(
         collection(db, "users"),
         where("email", "==", user.email.toLowerCase())
@@ -42,11 +44,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose }) => {
       if (!userBookings || userBookings.length === 0) {
         throw new Error("User has no bookings");
       }
-
-      // 2. Use the first booking ID (or let user select if multiple)
       const bookingId = userBookings[0];
-
-      // 3. Add as participant to that booking
       await addUserToBooking(bookingId, values.email.toLowerCase());
 
       setStatus({ success: true, message: "User added successfully!" });
